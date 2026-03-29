@@ -3,6 +3,7 @@ import Landing from './pages/Landing'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import Invoice from './pages/Invoice'
+import Clients from './pages/Clients'
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/invoice/new" element={<Invoice />} />
+        <Route path="/clients" element={<Clients />} />
       </Routes>
     </BrowserRouter>
   )
