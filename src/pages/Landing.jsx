@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { FileText, Users, BarChart3, 
          Globe, Shield, Zap, 
          ChevronRight, Check } from 'lucide-react'
 
-export default function Landing() {
-  const [annual, setAnnual] = useState(false)
+         export default function Landing() {
+          const [annual, setAnnual] = useState(false)
+          const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-white">
@@ -41,14 +43,16 @@ export default function Landing() {
               transition-colors font-medium">
               Log In
             </button>
-            <button className="bg-blue-600 text-white 
-              text-sm font-semibold px-5 py-2.5 
-              rounded-full hover:bg-blue-700 
-              transition-all shadow-lg 
-              shadow-blue-200 hover:shadow-blue-300
-              hover:-translate-y-0.5">
-              Get Started Free
-            </button>
+            <button 
+  onClick={() => navigate('/auth')}
+  className="bg-blue-600 text-white 
+  text-sm font-semibold px-5 py-2.5 
+  rounded-full hover:bg-blue-700 
+  transition-all shadow-lg 
+  shadow-blue-200 hover:shadow-blue-300
+  hover:-translate-y-0.5">
+  Get Started Free
+</button>
           </div>
         </div>
       </nav>
@@ -84,7 +88,9 @@ export default function Landing() {
 
           <div className="flex flex-col sm:flex-row 
             gap-4 justify-center">
-            <button className="bg-blue-600 text-white 
+            <button 
+              onClick={() => navigate('/auth')}
+              className="bg-blue-600 text-white 
               font-bold px-8 py-4 rounded-full 
               text-lg hover:bg-blue-700 transition-all
               shadow-xl shadow-blue-200 
