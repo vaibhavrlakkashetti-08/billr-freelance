@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 import { FileText, Mail, Lock, 
   User, Eye, EyeOff, 
   ArrowLeft } from 'lucide-react'
@@ -10,11 +12,41 @@ export default function Auth() {
   const [form, setForm] = useState({
     name: '', email: '', password: ''
   })
+  const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => setLoading(false), 2000)
+  
+    try {
+      if (isLogin) {
+        const { error } = await
+          supabase.auth.signInWithPassword({
+            email: form.email,
+            password: form.password,
+          })
+        if (error) throw error
+        navigate('/dashboard')
+      } else {
+        const { error } = await
+          supabase.auth.signUp({
+            email: form.email,
+            password: form.password,
+            options: {
+              data: {
+                full_name: form.name
+              }
+            }
+          })
+        if (error) throw error
+        alert('Account created! Please log in.')
+        setIsLogin(true)
+      }
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
