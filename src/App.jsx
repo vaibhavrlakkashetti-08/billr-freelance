@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import Invoice from './pages/Invoice'
 import Clients from './pages/Clients'
 import Portfolio from './pages/Portfolio'
+import Analytics from './pages/Analytics'
 
 function App() {
   return (
@@ -15,8 +16,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/invoice/new" element={<Invoice />} />
         <Route path="/clients" element={<Clients />} />
-        <Route path="/portfolio/:username" element={<Portfolio />} />
         <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/analytics" element={<Analytics />} />
       </Routes>
     </BrowserRouter>
   )
