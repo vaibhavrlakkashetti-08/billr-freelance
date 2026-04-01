@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ArrowLeft, Plus, Search,
   Mail, Phone, MapPin,
@@ -6,61 +6,7 @@ import {
   Edit2, Trash2, X,
   User, Building2, Check
 } from 'lucide-react'
-
-const INITIAL_CLIENTS = [
-  {
-    id: 1,
-    name: 'Acme Corp',
-    email: 'contact@acmecorp.com',
-    phone: '+91 98765 43210',
-    address: 'Mumbai, Maharashtra',
-    gstin: '27AAPFU0939F1ZV',
-    totalInvoices: 3,
-    totalPaid: 45000,
-    totalPending: 0,
-    lastInvoice: 'Mar 5, 2026',
-    status: 'active'
-  },
-  {
-    id: 2,
-    name: 'TechStart India',
-    email: 'billing@techstart.in',
-    phone: '+91 87654 32109',
-    address: 'Bangalore, Karnataka',
-    gstin: '',
-    totalInvoices: 2,
-    totalPaid: 0,
-    totalPending: 8500,
-    lastInvoice: 'Mar 6, 2026',
-    status: 'active'
-  },
-  {
-    id: 3,
-    name: 'Design Studio',
-    email: 'hello@designstudio.com',
-    phone: '+91 76543 21098',
-    address: 'Pune, Maharashtra',
-    gstin: '27BOCPS1234F1ZV',
-    totalInvoices: 4,
-    totalPaid: 22000,
-    totalPending: 22000,
-    lastInvoice: 'Feb 20, 2026',
-    status: 'overdue'
-  },
-  {
-    id: 4,
-    name: 'Startup Hub',
-    email: 'pay@startuphub.io',
-    phone: '+91 65432 10987',
-    address: 'Hyderabad, Telangana',
-    gstin: '',
-    totalInvoices: 1,
-    totalPaid: 0,
-    totalPending: 5000,
-    lastInvoice: 'Mar 7, 2026',
-    status: 'active'
-  },
-]
+import { supabase } from '../supabase'
 
 const EMPTY_CLIENT = {
   name: '', email: '', phone: '',
@@ -68,7 +14,7 @@ const EMPTY_CLIENT = {
 }
 
 export default function Clients() {
-  const [clients, setClients] = useState(INITIAL_CLIENTS)
+  const [clients, setClients] = useState([])
   const [search, setSearch] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [editClient, setEditClient] = useState(null)
@@ -76,17 +22,36 @@ export default function Clients() {
   const [selected, setSelected] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
 
+  async function loadClients() {
+    const { data: { user } } =
+      await supabase.auth.getUser()
+    const { data } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at',
+        { ascending: false })
+    if (data) setClients(data)
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadClients()
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [])
+
   // FILTER
   const filtered = clients.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.email.toLowerCase().includes(search.toLowerCase())
+    (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.email || '').toLowerCase().includes(search.toLowerCase())
   )
 
   // STATS
   const totalEarned = clients.reduce(
-    (s, c) => s + c.totalPaid, 0)
+    (s, c) => s + Number(c.totalPaid || 0), 0)
   const totalPending = clients.reduce(
-    (s, c) => s + c.totalPending, 0)
+    (s, c) => s + Number(c.totalPending || 0), 0)
 
   const openAdd = () => {
     setEditClient(null)
@@ -106,31 +71,45 @@ export default function Clients() {
     setShowModal(true)
   }
 
-  const saveClient = () => {
+  const saveClient = async () => {
     if (!form.name || !form.email) return
     if (editClient) {
-      setClients(prev => prev.map(c =>
-        c.id === editClient.id
-          ? { ...c, ...form }
-          : c
-      ))
+      await supabase
+        .from('clients')
+        .update({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          address: form.address,
+          gstin: form.gstin
+        })
+        .eq('id', editClient.id)
     } else {
-      setClients(prev => [...prev, {
-        id: Date.now(),
-        ...form,
-        totalInvoices: 0,
-        totalPaid: 0,
-        totalPending: 0,
-        lastInvoice: '—',
-        status: 'active'
-      }])
+      const { data: { user } } =
+        await supabase.auth.getUser()
+
+      await supabase
+        .from('clients')
+        .insert({
+          user_id: user.id,
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          address: form.address,
+          gstin: form.gstin
+        })
     }
+    await loadClients()
     setShowModal(false)
   }
 
-  const deleteClient = (id) => {
-    setClients(prev =>
-      prev.filter(c => c.id !== id))
+  const deleteClient = async (id) => {
+    await supabase
+      .from('clients')
+      .delete()
+      .eq('id', id)
+
+    await loadClients()
     setDeleteConfirm(null)
     if (selected?.id === id) setSelected(null)
   }
@@ -139,18 +118,18 @@ export default function Clients() {
     `₹${Number(n).toLocaleString('en-IN')}`
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-900">
 
       {/* HEADER */}
-      <header className="sticky top-0 bg-white
-        border-b border-slate-100 z-10">
+      <header className="sticky top-0 bg-slate-900
+        border-b border-slate-800 z-10">
         <div className="max-w-7xl mx-auto px-6
           h-16 flex items-center justify-between">
 
           <div className="flex items-center gap-4">
             <a href="/dashboard"
               className="flex items-center gap-2
-                text-slate-500 hover:text-blue-600
+                text-slate-400 hover:text-blue-400
                 transition-colors group text-sm
                 font-medium">
               <ArrowLeft size={18}
@@ -158,7 +137,7 @@ export default function Clients() {
                   transition-transform" />
               Dashboard
             </a>
-            <div className="h-4 w-px bg-slate-200" />
+            <div className="h-4 w-px bg-slate-700" />
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 bg-blue-600
                 rounded-lg flex items-center
@@ -166,7 +145,7 @@ export default function Clients() {
                 <User size={14}
                   className="text-white" />
               </div>
-              <span className="font-black text-slate-800">
+              <span className="font-black text-white">
                 Clients
               </span>
             </div>
@@ -176,8 +155,8 @@ export default function Clients() {
             className="flex items-center gap-2
               bg-blue-600 text-white text-sm
               font-bold px-4 py-2 rounded-xl
-              hover:bg-blue-700 transition-all
-              shadow-lg shadow-blue-200
+              hover:bg-blue-500 transition-all
+              shadow-lg shadow-blue-500/25
               hover:-translate-y-0.5">
             <Plus size={16} />
             Add Client
@@ -210,24 +189,24 @@ export default function Clients() {
             },
           ].map(stat => (
             <div key={stat.label}
-              className="bg-white rounded-2xl
-                border border-slate-100 p-5">
+              className="bg-slate-800 rounded-2xl
+                border border-slate-700 p-5">
               <div className="flex items-center
                 justify-between mb-3">
                 <span className="text-xs font-semibold
-                  text-slate-500 uppercase tracking-wide">
+                  text-slate-400 uppercase tracking-wide">
                   {stat.label}
                 </span>
                 <div className={`w-8 h-8 rounded-lg
-                  bg-${stat.color}-50 flex items-center
+                  bg-${stat.color}-500/20 flex items-center
                   justify-center`}>
                   <stat.icon size={16}
-                    className={`text-${stat.color}-600`}
+                    className={`text-${stat.color}-400`}
                   />
                 </div>
               </div>
               <p className="text-2xl font-black
-                text-slate-800">
+                text-white">
                 {stat.value}
               </p>
             </div>
@@ -249,9 +228,9 @@ export default function Clients() {
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search clients..."
                 className="w-full pl-11 pr-4 py-3
-                  bg-white border-2 border-slate-200
-                  rounded-2xl text-sm text-slate-800
-                  placeholder:text-slate-400
+                  bg-slate-800 border-2 border-slate-700
+                  rounded-2xl text-sm text-white
+                  placeholder:text-slate-500
                   focus:outline-none focus:border-blue-500
                   transition-colors"
               />
@@ -260,32 +239,36 @@ export default function Clients() {
             {/* LIST */}
             <div className="space-y-3">
               {filtered.length === 0 ? (
-                <div className="bg-white rounded-2xl
-                  border border-slate-100 p-12
+                <div className="bg-slate-800 rounded-2xl
+                  border border-slate-700 p-12
                   text-center">
                   <User size={40}
-                    className="text-slate-300
+                    className="text-slate-600
                       mx-auto mb-4" />
-                  <p className="text-slate-500
+                  <p className="text-slate-400
                     font-semibold">
-                    No clients found
+                    {clients.length === 0
+                      ? 'No clients yet'
+                      : 'No clients found'}
                   </p>
                   <button onClick={openAdd}
-                    className="mt-4 text-blue-600
+                    className="mt-4 text-blue-400
                       text-sm font-bold hover:underline">
-                    + Add your first client
+                    {clients.length === 0
+                      ? '+ Add Client'
+                      : '+ Add your first client'}
                   </button>
                 </div>
               ) : (
                 filtered.map(client => (
                   <div key={client.id}
                     onClick={() => setSelected(client)}
-                    className={`bg-white rounded-2xl
+                    className={`bg-slate-800 rounded-2xl
                       border-2 p-5 cursor-pointer
                       transition-all hover:shadow-md
                       ${selected?.id === client.id
                         ? 'border-blue-500 shadow-md'
-                        : 'border-slate-100 hover:border-blue-200'
+                        : 'border-slate-700 hover:border-blue-500/50'
                       }`}>
                     <div className="flex items-center
                       justify-between">
@@ -304,12 +287,12 @@ export default function Clients() {
                           <div className="flex items-center
                             gap-2">
                             <h3 className="font-bold
-                              text-slate-800">
+                              text-white">
                               {client.name}
                             </h3>
                             {client.status === 'overdue' && (
                               <span className="text-xs
-                                bg-red-100 text-red-600
+                                bg-red-500/20 text-red-400 border border-red-500/30
                                 font-bold px-2 py-0.5
                                 rounded-full">
                                 Overdue
@@ -317,13 +300,13 @@ export default function Clients() {
                             )}
                           </div>
                           <p className="text-sm
-                            text-slate-500">
+                            text-slate-400">
                             {client.email}
                           </p>
                           <p className="text-xs
-                            text-slate-400 mt-0.5">
-                            {client.totalInvoices} invoices •
-                            Last: {client.lastInvoice}
+                            text-slate-500 mt-0.5">
+                            {client.totalInvoices || 0} invoices •
+                            Last: {client.lastInvoice || '—'}
                           </p>
                         </div>
                       </div>
@@ -334,20 +317,20 @@ export default function Clients() {
                         <div className="text-right
                           hidden md:block">
                           <p className="text-sm font-bold
-                            text-green-600">
-                            {formatINR(client.totalPaid)}
+                            text-green-400">
+                            {formatINR(client.totalPaid || 0)}
                             <span className="text-xs
-                              font-normal text-slate-400
+                              font-normal text-slate-500
                               ml-1">
                               paid
                             </span>
                           </p>
-                          {client.totalPending > 0 && (
+                          {Number(client.totalPending || 0) > 0 && (
                             <p className="text-sm
-                              font-bold text-amber-500">
-                              {formatINR(client.totalPending)}
+                              font-bold text-yellow-400">
+                              {formatINR(client.totalPending || 0)}
                               <span className="text-xs
-                                font-normal text-slate-400
+                                font-normal text-slate-500
                                 ml-1">
                                 pending
                               </span>
@@ -361,8 +344,8 @@ export default function Clients() {
                           <button
                             onClick={() => openEdit(client)}
                             className="p-2 text-slate-400
-                              hover:text-blue-600
-                              hover:bg-blue-50 rounded-xl
+                              hover:text-blue-400
+                              hover:bg-blue-500/10 rounded-xl
                               transition-colors">
                             <Edit2 size={16} />
                           </button>
@@ -370,8 +353,8 @@ export default function Clients() {
                             onClick={() =>
                               setDeleteConfirm(client.id)}
                             className="p-2 text-slate-400
-                              hover:text-red-500
-                              hover:bg-red-50 rounded-xl
+                              hover:text-red-400
+                              hover:bg-red-500/10 rounded-xl
                               transition-colors">
                             <Trash2 size={16} />
                           </button>
@@ -387,20 +370,20 @@ export default function Clients() {
           {/* CLIENT DETAIL PANEL */}
           {selected && (
             <div className="w-80 flex-shrink-0">
-              <div className="bg-white rounded-2xl
-                border border-slate-100 p-6 sticky top-24">
+              <div className="bg-slate-800 rounded-2xl
+                border border-slate-700 p-6 sticky top-24">
 
                 {/* CLOSE */}
                 <div className="flex items-center
                   justify-between mb-6">
-                  <h2 className="font-black text-slate-800">
+                  <h2 className="font-black text-white">
                     Client Details
                   </h2>
                   <button
                     onClick={() => setSelected(null)}
                     className="p-1.5 text-slate-400
-                      hover:text-slate-600
-                      hover:bg-slate-100 rounded-lg
+                      hover:text-white
+                      hover:bg-slate-700 rounded-lg
                       transition-colors">
                     <X size={16} />
                   </button>
@@ -414,13 +397,13 @@ export default function Clients() {
                     text-2xl mx-auto mb-3">
                     {selected.name.charAt(0)}
                   </div>
-                  <h3 className="font-black text-slate-800
+                  <h3 className="font-black text-white
                     text-lg">
                     {selected.name}
                   </h3>
                   {selected.status === 'overdue' && (
-                    <span className="text-xs bg-red-100
-                      text-red-600 font-bold px-3 py-1
+                    <span className="text-xs bg-red-500/20
+                      text-red-400 border border-red-500/30 font-bold px-3 py-1
                       rounded-full">
                       Has Overdue Invoice
                     </span>
@@ -451,9 +434,9 @@ export default function Clients() {
                       className="flex items-center
                         gap-3 text-sm">
                       <item.icon size={16}
-                        className="text-slate-400
+                        className="text-slate-500
                           flex-shrink-0" />
-                      <span className="text-slate-600
+                      <span className="text-slate-300
                         break-all">
                         {item.value}
                       </span>
@@ -466,28 +449,28 @@ export default function Clients() {
                   {[
                     {
                       label: 'Invoices',
-                      value: selected.totalInvoices
+                      value: selected.totalInvoices || 0
                     },
                     {
                       label: 'Last Invoice',
-                      value: selected.lastInvoice
+                      value: selected.lastInvoice || '—'
                     },
                     {
                       label: 'Total Paid',
-                      value: formatINR(selected.totalPaid),
+                      value: formatINR(selected.totalPaid || 0),
                       green: true
                     },
                     {
                       label: 'Pending',
                       value: formatINR(
-                        selected.totalPending),
-                      amber: selected.totalPending > 0
+                        selected.totalPending || 0),
+                      amber: Number(selected.totalPending || 0) > 0
                     },
                   ].map(s => (
                     <div key={s.label}
-                      className="bg-slate-50 rounded-xl
+                      className="bg-slate-700/50 rounded-xl
                         p-3">
-                      <p className="text-xs text-slate-500
+                      <p className="text-xs text-slate-400
                         font-medium mb-1">
                         {s.label}
                       </p>
@@ -496,7 +479,7 @@ export default function Clients() {
                           ? 'text-green-600'
                           : s.amber
                           ? 'text-amber-500'
-                          : 'text-slate-800'}`}>
+                          : 'text-white'}`}>
                         {s.value}
                       </p>
                     </div>
@@ -509,7 +492,7 @@ export default function Clients() {
                     className="w-full flex items-center
                       justify-center gap-2 bg-blue-600
                       text-white text-sm font-bold py-3
-                      rounded-xl hover:bg-blue-700
+                      rounded-xl hover:bg-blue-500
                       transition-colors">
                     <Plus size={16} />
                     Create Invoice
@@ -518,10 +501,10 @@ export default function Clients() {
                     onClick={() => openEdit(selected)}
                     className="w-full flex items-center
                       justify-center gap-2 border-2
-                      border-slate-200 text-slate-700
+                      border-slate-600 text-slate-300
                       text-sm font-semibold py-3
-                      rounded-xl hover:border-blue-300
-                      hover:text-blue-600 transition-all">
+                      rounded-xl hover:border-blue-500
+                      hover:text-blue-400 transition-all">
                     <Edit2 size={16} />
                     Edit Client
                   </button>
@@ -536,20 +519,20 @@ export default function Clients() {
       {showModal && (
         <div className="fixed inset-0 z-50">
           <div
-            className="absolute inset-0 bg-black/50
-              backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70
+              backdrop-blur-md"
             onClick={() => setShowModal(false)}
           />
           <div className="absolute top-1/2 left-1/2
             -translate-x-1/2 -translate-y-1/2
-            bg-white rounded-3xl shadow-2xl
+            bg-slate-800 rounded-3xl shadow-2xl border border-slate-700
             w-full max-w-md p-8">
 
             {/* MODAL HEADER */}
             <div className="flex items-center
               justify-between mb-6">
               <h2 className="text-xl font-black
-                text-slate-800">
+                text-white">
                 {editClient
                   ? '✏️ Edit Client'
                   : '➕ Add Client'}
@@ -557,8 +540,8 @@ export default function Clients() {
               <button
                 onClick={() => setShowModal(false)}
                 className="p-2 text-slate-400
-                  hover:text-slate-600
-                  hover:bg-slate-100 rounded-xl
+                  hover:text-white
+                  hover:bg-slate-700 rounded-xl
                   transition-colors">
                 <X size={18} />
               </button>
@@ -600,7 +583,7 @@ export default function Clients() {
               ].map(field => (
                 <div key={field.key}>
                   <label className="text-xs font-bold
-                    text-slate-600 mb-1.5 block">
+                    text-slate-300 mb-1.5 block">
                     {field.label}
                   </label>
                   <div className="relative">
@@ -616,9 +599,9 @@ export default function Clients() {
                       }))}
                       placeholder={field.placeholder}
                       className="w-full pl-10 pr-4 py-3
-                        border-2 border-slate-200
-                        rounded-xl text-sm text-slate-800
-                        placeholder:text-slate-400
+                        bg-slate-700 border-2 border-slate-600
+                        rounded-xl text-sm text-white
+                        placeholder:text-slate-500
                         focus:outline-none
                         focus:border-blue-500
                         transition-colors"
@@ -632,9 +615,9 @@ export default function Clients() {
             <div className="grid grid-cols-2 gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
-                className="py-3 border-2 border-slate-200
-                  text-slate-700 font-semibold rounded-xl
-                  hover:bg-slate-50 transition-colors
+                className="py-3 border-2 border-slate-600
+                  text-slate-300 font-semibold rounded-xl
+                  hover:bg-slate-700 transition-colors
                   text-sm">
                 Cancel
               </button>
@@ -642,7 +625,7 @@ export default function Clients() {
                 onClick={saveClient}
                 disabled={!form.name || !form.email}
                 className="py-3 bg-blue-600 text-white
-                  font-bold rounded-xl hover:bg-blue-700
+                  font-bold rounded-xl hover:bg-blue-500
                   transition-colors text-sm
                   disabled:opacity-50
                   disabled:cursor-not-allowed
@@ -659,34 +642,34 @@ export default function Clients() {
       {deleteConfirm && (
         <div className="fixed inset-0 z-50">
           <div
-            className="absolute inset-0 bg-black/50
-              backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70
+              backdrop-blur-md"
             onClick={() => setDeleteConfirm(null)}
           />
           <div className="absolute top-1/2 left-1/2
             -translate-x-1/2 -translate-y-1/2
-            bg-white rounded-3xl shadow-2xl
+            bg-slate-800 rounded-3xl shadow-2xl border border-slate-700
             w-full max-w-sm p-8 text-center">
-            <div className="w-16 h-16 bg-red-100
+            <div className="w-16 h-16 bg-red-500/20
               rounded-2xl flex items-center
               justify-center mx-auto mb-4">
               <Trash2 size={28}
                 className="text-red-500" />
             </div>
             <h2 className="text-xl font-black
-              text-slate-800 mb-2">
+              text-white mb-2">
               Delete Client?
             </h2>
-            <p className="text-slate-500 text-sm mb-6">
+            <p className="text-slate-400 text-sm mb-6">
               This will delete the client and
               cannot be undone!
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="py-3 border-2 border-slate-200
-                  text-slate-700 font-semibold rounded-xl
-                  hover:bg-slate-50 transition-colors
+                className="py-3 border-2 border-slate-600
+                  text-slate-300 font-semibold rounded-xl
+                  hover:bg-slate-700 transition-colors
                   text-sm">
                 Cancel
               </button>

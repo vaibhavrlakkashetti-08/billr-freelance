@@ -75,18 +75,18 @@ export default function Invoice() {
     })}`
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-900">
 
       {/* TOP BAR */}
-      <header className="sticky top-0 bg-white
-        border-b border-slate-100 z-10">
+      <header className="sticky top-0 bg-slate-900
+        border-b border-slate-800 z-10">
         <div className="max-w-7xl mx-auto px-6
           h-16 flex items-center justify-between">
 
           <div className="flex items-center gap-4">
             <a href="/dashboard"
               className="flex items-center gap-2
-                text-slate-500 hover:text-blue-600
+                text-slate-400 hover:text-blue-400
                 transition-colors group">
               <ArrowLeft size={18}
                 className="group-hover:-translate-x-1
@@ -95,7 +95,7 @@ export default function Invoice() {
                 Dashboard
               </span>
             </a>
-            <div className="h-4 w-px bg-slate-200" />
+            <div className="h-4 w-px bg-slate-700" />
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 bg-blue-600
                 rounded-lg flex items-center
@@ -103,14 +103,14 @@ export default function Invoice() {
                 <FileText size={14}
                   className="text-white" />
               </div>
-              <span className="font-black text-slate-800">
+              <span className="font-black text-white">
                 Create Invoice
               </span>
             </div>
           </div>
 
           {/* TABS */}
-          <div className="flex bg-slate-100
+          <div className="flex bg-slate-700
             rounded-xl p-1 gap-1">
             {['edit', 'preview'].map(tab => (
               <button key={tab}
@@ -119,8 +119,8 @@ export default function Invoice() {
                   text-sm font-semibold capitalize
                   transition-all
                   ${activeTab === tab
-                    ? 'bg-white text-slate-800 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
+                    ? 'bg-slate-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
                   }`}>
                 {tab === 'edit' ? '✏️ Edit' : '👁️ Preview'}
               </button>
@@ -130,18 +130,18 @@ export default function Invoice() {
           {/* ACTIONS */}
           <div className="flex items-center gap-2">
             <button className="flex items-center gap-2
-              border-2 border-slate-200 text-slate-700
+              border-2 border-slate-600 text-slate-300
               text-sm font-semibold px-4 py-2
-              rounded-xl hover:border-blue-300
-              hover:text-blue-600 transition-all">
+              rounded-xl hover:border-blue-500
+              hover:text-blue-400 transition-all">
               <Download size={16} />
               PDF
             </button>
             <button className="flex items-center gap-2
               bg-blue-600 text-white text-sm
               font-bold px-4 py-2 rounded-xl
-              hover:bg-blue-700 transition-all
-              shadow-lg shadow-blue-200">
+              hover:bg-blue-500 transition-all
+              shadow-lg shadow-blue-500/25">
               <Send size={16} />
               Send Invoice
             </button>
@@ -160,10 +160,10 @@ export default function Invoice() {
             <div className="lg:col-span-2 space-y-6">
 
               {/* INVOICE DETAILS */}
-              <div className="bg-white rounded-2xl
-                border border-slate-100 p-6">
+              <div className="bg-slate-800 rounded-2xl
+                border border-slate-700 p-6">
                 <h2 className="text-sm font-bold
-                  text-slate-800 mb-4 flex items-center
+                  text-slate-300 mb-4 flex items-center
                   gap-2">
                   <Hash size={16}
                     className="text-blue-600" />
@@ -172,7 +172,7 @@ export default function Invoice() {
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="text-xs font-semibold
-                      text-slate-500 mb-1.5 block">
+                      text-slate-400 mb-1.5 block">
                       Invoice Number
                     </label>
                     <input
@@ -180,9 +180,9 @@ export default function Invoice() {
                       onChange={e => updateForm(
                         'invoiceNumber', e.target.value)}
                       className="w-full border-2
-                        border-slate-200 rounded-xl px-3
+                        bg-slate-700 border-slate-600 rounded-xl px-3
                         py-2.5 text-sm font-semibold
-                        text-slate-800 focus:outline-none
+                        text-white focus:outline-none
                         focus:border-blue-500
                         transition-colors"
                     />
@@ -228,10 +228,10 @@ export default function Invoice() {
               <div className="grid md:grid-cols-2 gap-6">
 
                 {/* FROM */}
-                <div className="bg-white rounded-2xl
-                  border border-slate-100 p-6">
+                <div className="bg-slate-800 rounded-2xl
+                  border border-slate-700 p-6">
                   <h2 className="text-sm font-bold
-                    text-slate-800 mb-4 flex items-center
+                    text-slate-300 mb-4 flex items-center
                     gap-2">
                     <Building2 size={16}
                       className="text-blue-600" />
@@ -257,10 +257,10 @@ export default function Invoice() {
                             field.key, e.target.value)}
                           placeholder={field.placeholder}
                           className="w-full border-2
-                            border-slate-200 rounded-xl
+                            bg-slate-700 border-slate-600 rounded-xl
                             px-3 py-2 text-sm
-                            text-slate-800
-                            placeholder:text-slate-400
+                            text-white
+                            placeholder:text-slate-500
                             focus:outline-none
                             focus:border-blue-500
                             transition-colors"
@@ -271,10 +271,10 @@ export default function Invoice() {
                 </div>
 
                 {/* TO */}
-                <div className="bg-white rounded-2xl
-                  border border-slate-100 p-6">
+                <div className="bg-slate-800 rounded-2xl
+                  border border-slate-700 p-6">
                   <h2 className="text-sm font-bold
-                    text-slate-800 mb-4 flex items-center
+                    text-slate-300 mb-4 flex items-center
                     gap-2">
                     <User size={16}
                       className="text-blue-600" />
@@ -300,10 +300,10 @@ export default function Invoice() {
                             field.key, e.target.value)}
                           placeholder={field.placeholder}
                           className="w-full border-2
-                            border-slate-200 rounded-xl
+                            bg-slate-700 border-slate-600 rounded-xl
                             px-3 py-2 text-sm
-                            text-slate-800
-                            placeholder:text-slate-400
+                            text-white
+                            placeholder:text-slate-500
                             focus:outline-none
                             focus:border-blue-500
                             transition-colors"
@@ -344,7 +344,7 @@ export default function Invoice() {
 
                 {/* ITEMS */}
                 <div className="space-y-3">
-                  {items.map((item, idx) => (
+                  {items.map(item => (
                     <div key={item.id}
                       className="grid grid-cols-12
                         gap-3 items-center">

@@ -153,11 +153,11 @@ export default function Portfolio() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-900">
 
       {/* NAVBAR */}
-      <nav className="sticky top-0 bg-white/80
-        backdrop-blur-md border-b border-slate-100
+      <nav className="sticky top-0 bg-slate-900/90
+        backdrop-blur-md border-b border-slate-800
         z-50">
         <div className="max-w-5xl mx-auto px-6
           h-16 flex items-center justify-between">
@@ -168,7 +168,7 @@ export default function Portfolio() {
               text-white font-black text-sm">
               {d.avatar}
             </div>
-            <span className="font-black text-slate-800">
+            <span className="font-black text-white">
               {d.name.split(' ')[0]}
             </span>
           </div>
@@ -182,8 +182,8 @@ export default function Portfolio() {
                 className={`text-sm font-semibold
                   capitalize transition-colors
                   ${activeSection === s
-                    ? 'text-blue-600'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'text-blue-400'
+                    : 'text-slate-400 hover:text-white'
                   }`}>
                 {s}
               </button>
@@ -194,8 +194,8 @@ export default function Portfolio() {
             onClick={() => setActiveSection('contact')}
             className="bg-blue-600 text-white text-sm
               font-bold px-4 py-2 rounded-full
-              hover:bg-blue-700 transition-all
-              shadow-lg shadow-blue-200
+              hover:bg-blue-500 transition-all
+              shadow-lg shadow-blue-500/25
               hover:-translate-y-0.5">
             Hire Me
           </button>
@@ -205,13 +205,13 @@ export default function Portfolio() {
       <div className="max-w-5xl mx-auto px-6 py-12">
 
         {/* HERO SECTION */}
-        <div className="bg-white rounded-3xl
-          border border-slate-100 p-8 md:p-12
+        <div className="bg-slate-800 rounded-3xl
+          border border-slate-700 p-8 md:p-12
           mb-8 relative overflow-hidden">
 
           {/* BG DECORATION */}
           <div className="absolute top-0 right-0
-            w-64 h-64 bg-blue-50 rounded-full
+            w-64 h-64 bg-blue-600/5 rounded-full
             -translate-y-32 translate-x-32
             pointer-events-none" />
 
@@ -245,14 +245,14 @@ export default function Portfolio() {
             <div className="flex-1 text-center
               md:text-left">
               <h1 className="text-3xl md:text-4xl
-                font-black text-slate-900 mb-2">
+                font-black text-white mb-2">
                 {d.name}
               </h1>
-              <p className="text-lg text-blue-600
+              <p className="text-lg text-blue-400
                 font-semibold mb-3">
                 {d.title}
               </p>
-              <p className="text-slate-500 leading-relaxed
+              <p className="text-slate-400 leading-relaxed
                 max-w-xl mb-6">
                 {d.bio}
               </p>
@@ -268,9 +268,9 @@ export default function Portfolio() {
                 ].map(item => (
                   <div key={item.text}
                     className="flex items-center gap-1.5
-                      text-sm text-slate-500">
+                      text-sm text-slate-400">
                     <item.icon size={14}
-                      className="text-slate-400" />
+                      className="text-slate-500" />
                     {item.text}
                   </div>
                 ))}
@@ -285,17 +285,17 @@ export default function Portfolio() {
                   className="flex items-center gap-2
                     bg-blue-600 text-white font-bold
                     px-6 py-3 rounded-full
-                    hover:bg-blue-700 transition-all
-                    shadow-lg shadow-blue-200
+                    hover:bg-blue-500 transition-all
+                    shadow-lg shadow-blue-500/25
                     hover:-translate-y-0.5 text-sm">
                   <MessageCircle size={16} />
                   Get In Touch
                 </button>
                 <button className="flex items-center
-                  gap-2 border-2 border-slate-200
-                  text-slate-700 font-semibold px-6
-                  py-3 rounded-full hover:border-blue-300
-                  hover:text-blue-600 transition-all
+                  gap-2 border-2 border-slate-600
+                  text-slate-300 font-semibold px-6
+                  py-3 rounded-full hover:border-blue-500
+                  hover:text-blue-400 transition-all
                   text-sm">
                   <Download size={16} />
                   Download CV

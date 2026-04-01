@@ -38,10 +38,10 @@ const RECENT_TRANSACTIONS = [
 ]
 
 const statusStyle = {
-  paid: 'bg-green-100 text-green-700',
-  pending: 'bg-yellow-100 text-yellow-700',
-  overdue: 'bg-red-100 text-red-700',
-  draft: 'bg-slate-100 text-slate-600',
+  paid: 'bg-green-500/20 text-green-400 border border-green-500/30',
+  pending: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
+  overdue: 'bg-red-500/20 text-red-400 border border-red-500/30',
+  draft: 'bg-slate-600/50 text-slate-400 border border-slate-500/30',
 }
 
 const maxEarned = Math.max(...MONTHLY_DATA.map(d => d.earned))
@@ -66,18 +66,18 @@ export default function Analytics() {
     `₹${Number(n).toLocaleString('en-IN')}`
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-900">
 
       {/* HEADER */}
-      <header className="sticky top-0 bg-white
-        border-b border-slate-100 z-10">
+      <header className="sticky top-0 bg-slate-900/95 backdrop-blur
+        border-b border-slate-800 z-10">
         <div className="max-w-7xl mx-auto px-6
           h-16 flex items-center justify-between">
 
           <div className="flex items-center gap-4">
             <a href="/dashboard"
               className="flex items-center gap-2
-                text-slate-500 hover:text-blue-600
+                text-slate-400 hover:text-blue-400
                 transition-colors group text-sm
                 font-medium">
               <ArrowLeft size={18}
@@ -85,7 +85,7 @@ export default function Analytics() {
                   transition-transform" />
               Dashboard
             </a>
-            <div className="h-4 w-px bg-slate-200" />
+            <div className="h-4 w-px bg-slate-700" />
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 bg-blue-600
                 rounded-lg flex items-center
@@ -93,7 +93,7 @@ export default function Analytics() {
                 <TrendingUp size={14}
                   className="text-white" />
               </div>
-              <span className="font-black text-slate-800">
+              <span className="font-black text-white">
                 Analytics
               </span>
             </div>
@@ -105,11 +105,11 @@ export default function Analytics() {
               <select
                 value={period}
                 onChange={e => setPeriod(e.target.value)}
-                className="appearance-none bg-white
-                  border-2 border-slate-200 rounded-xl
+                className="appearance-none bg-slate-800
+                  border-2 border-slate-700 rounded-xl
                   px-4 py-2 pr-8 text-sm font-semibold
-                  text-slate-700 focus:outline-none
-                  focus:border-blue-500 cursor-pointer">
+                  text-slate-300 focus:outline-none
+                  focus:border-blue-400 cursor-pointer">
                 {['This Month', '3 Months',
                   '6 Months', 'This Year'].map(p => (
                   <option key={p}>{p}</option>
@@ -122,10 +122,10 @@ export default function Analytics() {
             </div>
 
             <button className="flex items-center gap-2
-              border-2 border-slate-200 text-slate-700
+              border-2 border-slate-700 text-slate-300
               text-sm font-semibold px-4 py-2
-              rounded-xl hover:border-blue-300
-              hover:text-blue-600 transition-all">
+              rounded-xl hover:border-blue-500
+              hover:text-blue-400 transition-all">
               <Download size={16} />
               Export
             </button>
@@ -401,7 +401,7 @@ export default function Analytics() {
               Top Clients by Revenue
             </h2>
             <div className="space-y-4">
-              {TOP_CLIENTS.map((client, i) => (
+              {TOP_CLIENTS.map(client => (
                 <div key={client.name}>
                   <div className="flex items-center
                     justify-between mb-2">

@@ -1,36 +1,83 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
-import { FileText, Mail, Lock, 
-  User, Eye, EyeOff, 
-  ArrowLeft } from 'lucide-react'
+import {
+  FileText, Mail, Lock,
+  User, Eye, EyeOff, ArrowLeft
+} from 'lucide-react'
 
 export default function Auth() {
+  const navigate = useNavigate()
   const [isLogin, setIsLogin] = useState(true)
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [gLoading, setGLoading] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [isError, setIsError] = useState(false)
   const [form, setForm] = useState({
     name: '', email: '', password: ''
   })
-  const navigate = useNavigate()
+
+  useEffect(() => {
+    // If already logged in go to dashboard
+    supabase.auth.getSession().then(
+      ({ data: { session } }) => {
+        if (session) {
+          navigate('/dashboard', 
+            { replace: true })
+        }
+      }
+    )
+
+    // Listen for auth state changes
+    const { data: { subscription } } =
+      supabase.auth.onAuthStateChange(
+        (event, session) => {
+          if (session?.user) {
+            navigate('/dashboard',
+              { replace: true })
+          }
+        }
+      )
+
+    return () => subscription.unsubscribe()
+  }, [navigate])
+
+  const showMsg = (text, error = false) => {
+    setMsg(text)
+    setIsError(error)
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setMsg('')
     setLoading(true)
-  
+
     try {
       if (isLogin) {
-        const { error } = await
+        const { data, error } = await
           supabase.auth.signInWithPassword({
-            email: form.email,
+            email: form.email.trim(),
             password: form.password,
           })
         if (error) throw error
-        navigate('/dashboard')
+        if (data.session) {
+          navigate('/dashboard',
+            { replace: true })
+        } else {
+          showMsg(
+            'Login did not complete. Please try again.',
+            true
+          )
+        }
       } else {
-        const { error } = await
+        if (form.password.length < 6) {
+          throw new Error(
+            'Password needs 6+ characters')
+        }
+        const { data, error } = await
           supabase.auth.signUp({
-            email: form.email,
+            email: form.email.trim(),
             password: form.password,
             options: {
               data: {
@@ -39,329 +86,369 @@ export default function Auth() {
             }
           })
         if (error) throw error
-        alert('Account created! Please log in.')
-        setIsLogin(true)
+        if (data.session) {
+          navigate('/dashboard', { replace: true })
+        } else {
+          showMsg(
+            'Account created. Check your email to verify, then log in.'
+          )
+          setIsLogin(true)
+          setForm(p => ({
+            ...p, password: '', name: ''
+          }))
+        }
       }
     } catch (err) {
-      alert(err.message)
+      const message = err?.message || 'Something went wrong'
+      if (message.toLowerCase().includes('email not confirmed')) {
+        showMsg(
+          'Please verify your email first, then log in.',
+          true
+        )
+      } else {
+        showMsg(message, true)
+      }
     } finally {
       setLoading(false)
     }
   }
-
+  const handleGoogle = async () => {
+    setMsg('')
+    setGLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.hostname === 'localhost'
+            ? 'http://localhost:5173/callback'
+            : 'https://YOUR-APP.netlify.app/callback'
+        }
+      })
+      if (error) throw error
+      // Don't reset gLoading — browser will redirect to Google
+    } catch (err) {
+      showMsg(err.message, true)
+      setGLoading(false)
+    }
+  }
+  
   return (
-    <div className="min-h-screen bg-slate-50 
+    <div className="min-h-screen bg-slate-900
       flex items-center justify-center p-4">
 
-      {/* BACKGROUND DECORATION */}
-      <div className="absolute inset-0 overflow-hidden 
-        pointer-events-none">
-        <div className="absolute -top-40 -right-40 
-          w-96 h-96 bg-blue-100 rounded-full 
-          opacity-50 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 
-          w-96 h-96 bg-indigo-100 rounded-full 
-          opacity-50 blur-3xl" />
+      <div className="absolute inset-0
+        overflow-hidden pointer-events-none">
+        <div className="absolute -top-40
+          -right-40 w-96 h-96 bg-blue-600/10
+          rounded-full opacity-60 blur-3xl" />
+        <div className="absolute -bottom-40
+          -left-40 w-96 h-96 bg-slate-700/30
+          rounded-full opacity-60 blur-3xl" />
       </div>
 
       <div className="w-full max-w-md relative">
 
-        {/* BACK TO HOME */}
-        <a href="/" className="inline-flex items-center 
-          gap-2 text-slate-500 hover:text-blue-600 
-          text-sm mb-8 transition-colors group">
-          <ArrowLeft size={16} className="group-hover:
-            -translate-x-1 transition-transform" />
+        <a href="/"
+          className="inline-flex items-center
+            gap-2 text-slate-400
+            hover:text-blue-400 text-sm mb-8
+            transition-colors group">
+          <ArrowLeft size={16}
+            className="group-hover:-translate-x-1
+              transition-transform" />
           Back to home
         </a>
 
-        {/* CARD */}
-        <div className="bg-white rounded-3xl shadow-xl 
-          shadow-slate-200 border border-slate-100 p-8">
+        <div className="bg-slate-800 rounded-3xl
+          border border-slate-700 p-8">
 
           {/* LOGO */}
-          <div className="flex items-center 
+          <div className="flex items-center
             justify-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-blue-600 
-              rounded-xl flex items-center justify-center
-              shadow-lg shadow-blue-200">
-              <FileText size={20} className="text-white"/>
+            <div className="w-10 h-10 bg-blue-600
+              rounded-xl flex items-center
+              justify-center shadow-lg
+              shadow-blue-200">
+              <FileText size={20}
+                className="text-white" />
             </div>
-            <span className="text-2xl font-black 
-              text-slate-800">
+            <span className="text-2xl font-black
+              text-white">
               BILLR
             </span>
           </div>
 
-          {/* TOGGLE LOGIN/SIGNUP */}
-          <div className="flex bg-slate-100 
+          {/* TOGGLE */}
+          <div className="flex bg-slate-700
             rounded-2xl p-1 mb-8">
-            <button
-              onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2.5 rounded-xl 
-                text-sm font-semibold transition-all
-                ${isLogin 
-                  ? 'bg-white text-slate-800 shadow-sm' 
-                  : 'text-slate-500 hover:text-slate-700'
-                }`}>
-              Log In
-            </button>
-            <button
-              onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2.5 rounded-xl 
-                text-sm font-semibold transition-all
-                ${!isLogin 
-                  ? 'bg-white text-slate-800 shadow-sm' 
-                  : 'text-slate-500 hover:text-slate-700'
-                }`}>
-              Sign Up
-            </button>
+            {['Log In', 'Sign Up'].map((t, i) => (
+              <button key={t}
+                onClick={() => {
+                  setIsLogin(i === 0)
+                  setMsg('')
+                }}
+                className={`flex-1 py-2.5
+                  rounded-xl text-sm font-semibold
+                  transition-all
+                  ${(i === 0) === isLogin
+                    ? 'bg-slate-700 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                  }`}>
+                {t}
+              </button>
+            ))}
           </div>
 
           {/* TITLE */}
           <div className="mb-6">
-            <h1 className="text-2xl font-black 
-              text-slate-900">
-              {isLogin 
-                ? 'Welcome back! 👋' 
-                : 'Create your account ✨'}
+            <h1 className="text-2xl font-black
+              text-white">
+              {isLogin
+                ? 'Welcome back! 👋'
+                : 'Create account ✨'}
             </h1>
-            <p className="text-slate-500 text-sm mt-1">
-              {isLogin 
-                ? 'Log in to manage your invoices' 
-                : 'Start creating GST invoices for free'}
+            <p className="text-slate-400 text-sm
+              mt-1">
+              {isLogin
+                ? 'Log in to manage invoices'
+                : 'Start free — no credit card'}
             </p>
           </div>
 
-          {/* GOOGLE BUTTON */}
-          <button className="w-full flex items-center 
-            justify-center gap-3 border-2 border-slate-200 
-            rounded-2xl py-3 px-4 text-sm font-semibold
-            text-slate-700 hover:border-blue-300 
-            hover:bg-blue-50 transition-all mb-6">
-           <img 
-  src="https://www.google.com/favicon.ico" 
-  alt="Google" 
-  className="w-5 h-5" 
-/>
-Continue with Google
+          {/* MESSAGE */}
+          {msg && (
+            <div className={`p-3 rounded-xl
+              text-sm font-medium mb-4
+              ${isError
+                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                : 'bg-green-500/20 text-green-400 border border-green-500/30'
+              }`}>
+              {msg}
+            </div>
+          )}
+
+          {/* GOOGLE */}
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={gLoading}
+            className="w-full flex items-center
+              justify-center gap-3 border-2 bg-slate-700
+              border-slate-600 rounded-2xl
+              py-3 px-4 text-sm font-semibold
+              text-slate-300 hover:border-blue-400
+              hover:bg-slate-600 transition-all mb-6
+              disabled:opacity-70
+              disabled:cursor-not-allowed">
+            {gLoading ? (
+              <div className="w-5 h-5 border-2
+                border-slate-400 border-t-blue-600
+                rounded-full animate-spin" />
+            ) : (
+              <img
+                src="https://www.google.com/favicon.ico"
+                alt="G"
+                className="w-5 h-5"
+              />
+            )}
+            {gLoading
+              ? 'Opening Google...'
+              : 'Continue with Google'}
           </button>
 
           {/* DIVIDER */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex-1 h-px bg-slate-200" />
-            <span className="text-xs text-slate-400 
-              font-medium">
+          <div className="flex items-center
+            gap-4 mb-6">
+            <div className="flex-1 h-px
+              bg-slate-700" />
+            <span className="text-xs
+              text-slate-500 font-medium">
               OR
             </span>
-            <div className="flex-1 h-px bg-slate-200" />
+            <div className="flex-1 h-px
+              bg-slate-700" />
           </div>
 
           {/* FORM */}
-          <form onSubmit={handleSubmit} 
+          <form onSubmit={handleSubmit}
             className="space-y-4">
 
-            {/* NAME — Signup only */}
             {!isLogin && (
               <div>
-                <label className="text-sm font-semibold 
-                  text-slate-700 mb-2 block">
+                <label className="text-sm
+                  font-semibold text-slate-300
+                  mb-2 block">
                   Full Name
                 </label>
                 <div className="relative">
-                  <User size={18} 
-                    className="absolute left-4 top-1/2 
-                    -translate-y-1/2 text-slate-400" />
+                  <User size={18}
+                    className="absolute left-4
+                      top-1/2 -translate-y-1/2
+                      text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Vaibhav Lakkashetti"
+                    placeholder="Your full name"
                     value={form.name}
-                    onChange={e => setForm({
-                      ...form, name: e.target.value
-                    })}
-                    className="w-full pl-11 pr-4 py-3 
-                      border-2 border-slate-200 rounded-2xl
-                      text-sm text-slate-800
-                      placeholder:text-slate-400
-                      focus:outline-none 
-                      focus:border-blue-500
+                    onChange={e => setForm(
+                      p => ({
+                        ...p,
+                        name: e.target.value
+                      }))}
+                    className="w-full pl-11 pr-4 bg-slate-700
+                      py-3 border-2 border-slate-600
+                      rounded-2xl text-sm
+                      text-white
+                      placeholder:text-slate-500
+                      focus:outline-none
+                      focus:border-blue-400
                       transition-colors"
                   />
                 </div>
               </div>
             )}
 
-            {/* EMAIL */}
             <div>
-              <label className="text-sm font-semibold 
-                text-slate-700 mb-2 block">
+              <label className="text-sm
+                font-semibold text-slate-300
+                mb-2 block">
                 Email Address
               </label>
               <div className="relative">
-                <Mail size={18} 
-                  className="absolute left-4 top-1/2 
-                  -translate-y-1/2 text-slate-400" />
+                <Mail size={18}
+                  className="absolute left-4
+                    top-1/2 -translate-y-1/2
+                    text-slate-400" />
                 <input
                   type="email"
+                  required
                   placeholder="you@example.com"
                   value={form.email}
-                  onChange={e => setForm({
-                    ...form, email: e.target.value
-                  })}
-                  className="w-full pl-11 pr-4 py-3 
-                    border-2 border-slate-200 rounded-2xl
-                    text-sm text-slate-800
-                    placeholder:text-slate-400
-                    focus:outline-none 
-                    focus:border-blue-500
+                  onChange={e => setForm(
+                    p => ({
+                      ...p,
+                      email: e.target.value
+                    }))}
+                  className="w-full pl-11 pr-4 bg-slate-700
+                    py-3 border-2 border-slate-600
+                    rounded-2xl text-sm
+                    text-white
+                    placeholder:text-slate-500
+                    focus:outline-none
+                    focus:border-blue-400
                     transition-colors"
                 />
               </div>
             </div>
 
-            {/* PASSWORD */}
             <div>
-              <div className="flex justify-between 
+              <div className="flex justify-between
                 items-center mb-2">
-                <label className="text-sm font-semibold 
-                  text-slate-700">
+                <label className="text-sm
+                  font-semibold text-slate-300">
                   Password
                 </label>
                 {isLogin && (
-                  <a href="#" className="text-xs 
-                    text-blue-600 hover:text-blue-700
-                    font-medium">
+                  <button type="button"
+                    className="text-xs
+                      text-blue-400
+                      hover:text-blue-400
+                      font-medium">
                     Forgot password?
-                  </a>
+                  </button>
                 )}
               </div>
               <div className="relative">
-                <Lock size={18} 
-                  className="absolute left-4 top-1/2 
-                  -translate-y-1/2 text-slate-400" />
+                <Lock size={18}
+                  className="absolute left-4
+                    top-1/2 -translate-y-1/2
+                    text-slate-400" />
                 <input
-                  type={showPass ? 'text' : 'password'}
-                  placeholder={isLogin 
-                    ? 'Enter password' 
-                    : 'Min 8 characters'}
+                  type={showPass
+                    ? 'text' : 'password'}
+                  required
+                  placeholder={isLogin
+                    ? 'Your password'
+                    : 'Min 6 characters'}
                   value={form.password}
-                  onChange={e => setForm({
-                    ...form, password: e.target.value
-                  })}
-                  className="w-full pl-11 pr-12 py-3 
-                    border-2 border-slate-200 rounded-2xl
-                    text-sm text-slate-800
-                    placeholder:text-slate-400
-                    focus:outline-none 
-                    focus:border-blue-500
+                  onChange={e => setForm(
+                    p => ({
+                      ...p,
+                      password: e.target.value
+                    }))}
+                  className="w-full pl-11 pr-12 bg-slate-700
+                    py-3 border-2 border-slate-600
+                    rounded-2xl text-sm
+                    text-white
+                    placeholder:text-slate-500
+                    focus:outline-none
+                    focus:border-blue-400
                     transition-colors"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 
-                    -translate-y-1/2 text-slate-400
-                    hover:text-slate-600 transition-colors">
-                  {showPass 
-                    ? <EyeOff size={18} /> 
+                  onClick={() =>
+                    setShowPass(!showPass)}
+                  className="absolute right-4
+                    top-1/2 -translate-y-1/2
+                    text-slate-400
+                    hover:text-slate-600">
+                  {showPass
+                    ? <EyeOff size={18} />
                     : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            {/* PASSWORD STRENGTH — Signup only */}
-            {!isLogin && form.password.length > 0 && (
-              <div className="space-y-1">
-                <div className="flex gap-1">
-                  {[1,2,3,4].map(i => (
-                    <div key={i} 
-                      className={`flex-1 h-1.5 rounded-full 
-                        transition-all ${
-                        form.password.length >= i * 2
-                          ? i <= 1 ? 'bg-red-400'
-                          : i <= 2 ? 'bg-yellow-400'
-                          : i <= 3 ? 'bg-blue-400'
-                          : 'bg-green-400'
-                          : 'bg-slate-200'
-                      }`} />
-                  ))}
-                </div>
-                <p className="text-xs text-slate-400">
-                  {form.password.length < 4 
-                    ? '🔴 Too weak'
-                    : form.password.length < 6 
-                    ? '🟡 Getting better'
-                    : form.password.length < 8 
-                    ? '🔵 Almost there'
-                    : '🟢 Strong password!'}
-                </p>
-              </div>
-            )}
-
-            {/* TERMS — Signup only */}
-            {!isLogin && (
-              <p className="text-xs text-slate-500">
-                By signing up you agree to our{' '}
-                <a href="#" className="text-blue-600 
-                  hover:underline font-medium">
-                  Terms of Service
-                </a>
-                {' '}and{' '}
-                <a href="#" className="text-blue-600 
-                  hover:underline font-medium">
-                  Privacy Policy
-                </a>
-              </p>
-            )}
-
-            {/* SUBMIT BUTTON */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white 
-                font-bold py-3.5 rounded-2xl text-sm
-                hover:bg-blue-700 transition-all
-                shadow-lg shadow-blue-200
-                hover:shadow-blue-300
+              className="w-full bg-blue-600
+                text-white font-bold py-3.5
+                rounded-2xl text-sm
+                hover:bg-blue-500 transition-all
+                shadow-lg shadow-blue-500/25
                 hover:-translate-y-0.5
                 disabled:opacity-70
                 disabled:cursor-not-allowed
                 disabled:transform-none
-                flex items-center justify-center gap-2">
+                flex items-center
+                justify-center gap-2">
               {loading ? (
                 <>
-                  <div className="w-4 h-4 border-2 
-                    border-white/30 border-t-white 
+                  <div className="w-4 h-4 border-2
+                    border-white/30 border-t-white
                     rounded-full animate-spin" />
-                  {isLogin 
-                    ? 'Logging in...' 
-                    : 'Creating account...'}
+                  Please wait...
                 </>
               ) : (
-                isLogin ? 'Log In' : 'Create Free Account'
+                isLogin
+                  ? 'Log In'
+                  : 'Create Free Account'
               )}
             </button>
           </form>
 
-          {/* SWITCH MODE */}
-          <p className="text-center text-sm 
-            text-slate-500 mt-6">
-            {isLogin 
-              ? "Don't have an account? " 
+          <p className="text-center text-sm
+            text-slate-400 mt-6">
+            {isLogin
+              ? "Don't have an account? "
               : 'Already have an account? '}
             <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-blue-600 font-semibold 
-                hover:text-blue-700 transition-colors">
+              onClick={() => {
+                setIsLogin(!isLogin)
+                setMsg('')
+              }}
+              className="text-blue-400
+                font-semibold
+                hover:text-blue-400">
               {isLogin ? 'Sign up free' : 'Log in'}
             </button>
           </p>
         </div>
 
-        {/* BOTTOM NOTE */}
-        <p className="text-center text-xs 
-          text-slate-400 mt-6">
-          🔒 Secured with bank-grade encryption
+        <p className="text-center text-xs
+          text-slate-500 mt-6">
+          🔒 Bank-grade encryption
         </p>
       </div>
     </div>
