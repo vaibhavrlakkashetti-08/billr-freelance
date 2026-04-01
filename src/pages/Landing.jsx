@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { FileText, Users, BarChart3, Globe, Shield, Zap, ArrowRight, Check, Star, ChevronLeft, ChevronRight } from 'lucide-react'
 
 /* ─── SCROLL Y ───────────────────────────────────────── */
@@ -192,6 +193,7 @@ function FeatureCard({ feature, delay }) {
 
 /* ─── MAIN ────────────────────────────────────────────── */
 export default function Landing() {
+  const navigate = useNavigate()
   const [annual, setAnnual] = useState(false)
   const scrollY = useScrollY()
 
@@ -249,10 +251,10 @@ export default function Landing() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <button style={{ color: '#a1a1a6', background: 'none', border: 'none', fontSize: 14, cursor: 'pointer', transition: 'color 0.2s' }}
+            <button onClick={() => navigate('/auth')} style={{ color: '#a1a1a6', background: 'none', border: 'none', fontSize: 14, cursor: 'pointer', transition: 'color 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.color = '#f5f5f7'}
               onMouseLeave={e => e.currentTarget.style.color = '#a1a1a6'}>Log In</button>
-            <button style={{ background: '#f5f5f7', color: '#000', border: 'none', borderRadius: 980, padding: '8px 20px', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 0.25s ease', letterSpacing: '-0.01em' }}
+            <button onClick={() => navigate('/auth')} style={{ background: '#f5f5f7', color: '#000', border: 'none', borderRadius: 980, padding: '8px 20px', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 0.25s ease', letterSpacing: '-0.01em' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.transform = 'scale(1.04)' }}
               onMouseLeave={e => { e.currentTarget.style.background = '#f5f5f7'; e.currentTarget.style.transform = 'scale(1)' }}>Get Started</button>
           </div>
@@ -298,7 +300,7 @@ export default function Landing() {
 
           <Reveal delay={360}>
             <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button style={{ background: '#f5f5f7', color: '#000', border: 'none', borderRadius: 980, padding: '16px 36px', fontSize: 16, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.3s cubic-bezier(.16,1,.3,1)', letterSpacing: '-0.01em' }}
+              <button onClick={() => navigate('/auth')} style={{ background: '#f5f5f7', color: '#000', border: 'none', borderRadius: 980, padding: '16px 36px', fontSize: 16, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.3s cubic-bezier(.16,1,.3,1)', letterSpacing: '-0.01em' }}
                 onMouseEnter={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.transform = 'scale(1.04) translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(255,255,255,0.12)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = '#f5f5f7'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}>
                 Create Free Invoice <ArrowRight size={18} strokeWidth={2.5} />
@@ -428,7 +430,7 @@ export default function Landing() {
                     <span style={{ color: '#a1a1a6', fontSize: 14 }}>{f}</span>
                   </div>
                 ))}
-                <button style={{ width: '100%', marginTop: 36, background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 980, padding: '14px 0', color: '#f5f5f7', fontSize: 15, fontWeight: 500, cursor: 'pointer', transition: 'all 0.25s ease' }}
+                <button onClick={() => navigate('/auth')} style={{ width: '100%', marginTop: 36, background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 980, padding: '14px 0', color: '#f5f5f7', fontSize: 15, fontWeight: 500, cursor: 'pointer', transition: 'all 0.25s ease' }}
                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}>
                   Get Started Free
@@ -457,7 +459,7 @@ export default function Landing() {
                     <span style={{ color: '#1d1d1f', fontSize: 14 }}>{f}</span>
                   </div>
                 ))}
-                <button style={{ width: '100%', marginTop: 36, background: '#000', border: 'none', borderRadius: 980, padding: '15px 0', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', transition: 'all 0.25s ease' }}
+                <button onClick={() => navigate('/auth')} style={{ width: '100%', marginTop: 36, background: '#000', border: 'none', borderRadius: 980, padding: '15px 0', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', transition: 'all 0.25s ease' }}
                   onMouseEnter={e => { e.currentTarget.style.background = '#1d1d1f'; e.currentTarget.style.transform = 'scale(1.02)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = '#000'; e.currentTarget.style.transform = 'scale(1)' }}>
                   Start Pro Free Trial
@@ -484,7 +486,7 @@ export default function Landing() {
             </p>
           </Reveal>
           <Reveal delay={240}>
-            <button style={{ background: '#f5f5f7', color: '#000', border: 'none', borderRadius: 980, padding: '18px 44px', fontSize: 17, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10, transition: 'all 0.3s cubic-bezier(.16,1,.3,1)', letterSpacing: '-0.01em' }}
+            <button onClick={() => navigate('/auth')} style={{ background: '#f5f5f7', color: '#000', border: 'none', borderRadius: 980, padding: '18px 44px', fontSize: 17, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10, transition: 'all 0.3s cubic-bezier(.16,1,.3,1)', letterSpacing: '-0.01em' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.transform = 'scale(1.05) translateY(-3px)'; e.currentTarget.style.boxShadow = '0 16px 48px rgba(255,255,255,0.12)' }}
               onMouseLeave={e => { e.currentTarget.style.background = '#f5f5f7'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}>
               Create Your Free Account <ArrowRight size={20} strokeWidth={2.5} />
