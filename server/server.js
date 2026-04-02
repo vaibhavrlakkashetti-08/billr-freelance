@@ -120,6 +120,20 @@ app.get('/api/hello', (req, res) => {
   res.json({ message: 'Hello from the backend server!' });
 });
 
+// Root endpoint for browser visits and health checks
+app.get('/', (req, res) => {
+  res.send(`
+    <html>
+      <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #0f172a; color: white; margin: 0;">
+        <div style="text-align: center; padding: 2rem; background: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+          <h1 style="color: #38bdf8; margin-top: 0;">Backend Server is Running! 🚀</h1>
+          <p style="color: #94a3b8; margin-bottom: 0;">The API is successfully deployed and listening securely.</p>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
 app.listen(port, () => {
   console.log(`Backend Server running on port ${port}`);
 });
