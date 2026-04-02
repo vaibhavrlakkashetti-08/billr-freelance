@@ -1,4 +1,6 @@
 import winston from 'winston';
+import SupabaseTransport from './supabaseTransport.js';
+
 
 const env = process.env.NODE_ENV || 'development';
 const isDevelopment = env === 'development';
@@ -71,7 +73,9 @@ const logger = winston.createLogger({
   transports: [
     // Save to files natively
     new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' })
+    new winston.transports.File({ filename: 'logs/combined.log' }),
+    // Save to Supabase
+    new SupabaseTransport({ tableName: 'logs' })
   ]
 });
 
