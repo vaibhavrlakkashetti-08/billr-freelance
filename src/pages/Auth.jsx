@@ -119,9 +119,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.hostname === 'localhost'
-            ? 'http://localhost:5173/callback'
-            : 'https://YOUR-APP.netlify.app/callback'
+          redirectTo: `${window.location.origin}/dashboard`
         }
       })
       if (error) throw error
