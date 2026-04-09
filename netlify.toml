@@ -1,11 +1,6 @@
 [build]
   command = "npm run build"
   publish = "dist"
-
-[build.environment]
-  NODE_VERSION = "20"
-  CI = "false"
-
 # ── Required environment variables (set in Netlify dashboard) ──────────────────
 # Site Settings → Environment Variables → Add a variable
 #
