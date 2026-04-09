@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   ArrowLeft, Plus, Trash2,
   Download, Send, Eye,
@@ -6,9 +6,11 @@ import {
   Calendar, Hash, IndianRupee,
   Save, List, X, ChevronRight,
   CheckCircle2, Clock, AlertCircle,
-  PenLine, RefreshCw
+  PenLine, RefreshCw, Share2
 } from 'lucide-react'
 import { supabase } from '../supabase'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 const TAX_RATES = [
   { label: 'No GST (0%)', cgst: 0, sgst: 0 },
@@ -178,6 +180,7 @@ export default function Invoice() {
       from_address   : form.fromAddress,
       from_gst       : form.fromGST,
       to_name        : form.toName,
+      client_name    : form.toName,      // alias for Dashboard compatibility
       to_email       : form.toEmail,
       to_phone       : form.toPhone,
       to_address     : form.toAddress,
@@ -237,6 +240,61 @@ export default function Invoice() {
     fetchInvoices()
   }
 
+  // ── DOWNLOAD PDF ──────────────────────────────────────────────────────────
+  const [pdfLoading, setPdfLoading] = useState(false)
+
+  const downloadPDF = async () => {
+    setPdfLoading(true)
+    try {
+      const element = document.getElementById('invoice-preview')
+      if (!element) { setActiveTab('preview'); setTimeout(() => downloadPDF(), 300); setPdfLoading(false); return }
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      })
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const pageW = pdf.internal.pageSize.getWidth()
+      const pageH = pdf.internal.pageSize.getHeight()
+      const imgW = pageW
+      const imgH = (canvas.height * pageW) / canvas.width
+      if (imgH <= pageH) {
+        pdf.addImage(imgData, 'PNG', 0, 0, imgW, imgH)
+      } else {
+        // multi-page
+        let offset = 0
+        while (offset < imgH) {
+          pdf.addImage(imgData, 'PNG', 0, -offset, imgW, imgH)
+          offset += pageH
+          if (offset < imgH) pdf.addPage()
+        }
+      }
+      pdf.save(`${form.invoiceNumber || 'Invoice'}.pdf`)
+    } catch (err) {
+      console.error('PDF error:', err)
+      setSaveMsg('❌ PDF generation failed')
+      setTimeout(() => setSaveMsg(''), 3000)
+    } finally {
+      setPdfLoading(false)
+    }
+  }
+
+  // ── SHARE VIA WHATSAPP ──────────────────────────────────────────────────────
+  const shareWhatsApp = () => {
+    const text = encodeURIComponent(
+      `📄 *Invoice ${form.invoiceNumber || ''}*\n` +
+      `👤 To: ${form.toName || 'Client'}\n` +
+      `💰 Amount: ${formatINR(total)}\n` +
+      `📅 Date: ${form.invoiceDate || '—'}\n` +
+      (form.dueDate ? `⏰ Due: ${form.dueDate}\n` : '') +
+      (form.upiId ? `\n💳 Pay via UPI: ${form.upiId}\n   (GPay · PhonePe · Paytm)\n` : '') +
+      `\n_Sent via BILLR_`
+    )
+    window.open(`https://wa.me/?text=${text}`, '_blank')
+  }
+
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col">
 
@@ -283,6 +341,19 @@ export default function Invoice() {
               className="flex items-center gap-1.5 bg-green-600 text-white text-sm font-bold px-3 py-2 rounded-xl hover:bg-green-500 transition-all shadow-lg shadow-green-500/20 disabled:opacity-60">
               {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
               <span className="hidden sm:inline">{saving ? 'Saving…' : 'Save'}</span>
+            </button>
+            <button onClick={async () => { if (activeTab !== 'preview') { setActiveTab('preview'); await new Promise(r => setTimeout(r, 300)) } downloadPDF() }}
+              disabled={pdfLoading}
+              title="Download PDF"
+              className="flex items-center gap-1.5 bg-purple-600 text-white text-sm font-bold px-3 py-2 rounded-xl hover:bg-purple-500 transition-all shadow-lg shadow-purple-500/20 disabled:opacity-60">
+              {pdfLoading ? <RefreshCw size={14} className="animate-spin" /> : <Download size={14} />}
+              <span className="hidden sm:inline">{pdfLoading ? 'Generating…' : 'PDF'}</span>
+            </button>
+            <button onClick={shareWhatsApp}
+              title="Share via WhatsApp"
+              className="flex items-center gap-1.5 bg-green-700 text-white text-sm font-bold px-3 py-2 rounded-xl hover:bg-green-600 transition-all shadow-lg shadow-green-700/20">
+              <Share2 size={14} />
+              <span className="hidden sm:inline">Share</span>
             </button>
             <button onClick={newInvoice}
               className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-bold px-3 py-2 rounded-xl hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20">
@@ -473,9 +544,10 @@ export default function Invoice() {
                     Services / Items
                   </h2>
                   <div className="grid grid-cols-12 gap-3 mb-3 px-1">
-                    {[['Description',6],['Qty',2],['Rate (₹)',2],['Amount',2]].map(([h, span]) => (
-                      <div key={h} className={`col-span-${span} text-xs font-semibold text-slate-500 uppercase tracking-wide ${h==='Amount' ? 'text-right' : ''}`}>{h}</div>
-                    ))}
+                    <div className="col-span-6 text-xs font-semibold text-slate-500 uppercase tracking-wide">Description</div>
+                    <div className="col-span-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Qty</div>
+                    <div className="col-span-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Rate (₹)</div>
+                    <div className="col-span-2 text-xs font-semibold text-slate-500 uppercase tracking-wide text-right">Amount</div>
                   </div>
                   <div className="space-y-3">
                     {items.map(item => (
@@ -495,10 +567,10 @@ export default function Invoice() {
                             onChange={e => updateItem(item.id, 'rate', Number(e.target.value))}
                             className="w-full border-2 bg-slate-700 border-slate-600 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors" />
                         </div>
-                        <div className="col-span-1 text-right">
+                        <div className="col-span-1 text-right flex items-center justify-end">
                           <span className="text-sm font-bold text-white">{formatINR(item.quantity * item.rate)}</span>
                         </div>
-                        <div className="col-span-1 flex justify-center">
+                        <div className="col-span-1 flex justify-center items-center">
                           {items.length > 1 && (
                             <button onClick={() => removeItem(item.id)}
                               className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
@@ -716,7 +788,7 @@ export default function Invoice() {
               </div>
 
               {/* Preview Actions */}
-              <div className="flex gap-3 mt-4 justify-center">
+              <div className="flex gap-3 mt-4 justify-center flex-wrap">
                 <button onClick={() => setActiveTab('edit')}
                   className="flex items-center gap-2 border-2 border-slate-700 text-slate-300 text-sm font-semibold px-4 py-2 rounded-xl hover:border-blue-500 hover:text-blue-400 transition-all">
                   <ArrowLeft size={15} /> Back to Edit
@@ -725,6 +797,15 @@ export default function Invoice() {
                   className="flex items-center gap-2 bg-green-600 text-white text-sm font-bold px-4 py-2 rounded-xl hover:bg-green-500 transition-all disabled:opacity-60">
                   {saving ? <RefreshCw size={15} className="animate-spin" /> : <Save size={15} />}
                   {saving ? 'Saving…' : 'Save Invoice'}
+                </button>
+                <button onClick={downloadPDF} disabled={pdfLoading}
+                  className="flex items-center gap-2 bg-purple-600 text-white text-sm font-bold px-4 py-2 rounded-xl hover:bg-purple-500 transition-all disabled:opacity-60">
+                  {pdfLoading ? <RefreshCw size={15} className="animate-spin" /> : <Download size={15} />}
+                  {pdfLoading ? 'Generating…' : 'Download PDF'}
+                </button>
+                <button onClick={shareWhatsApp}
+                  className="flex items-center gap-2 bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-xl hover:bg-green-600 transition-all">
+                  <Share2 size={15} /> WhatsApp
                 </button>
               </div>
             </div>

@@ -173,19 +173,22 @@ export default function Clients() {
               label: 'Total Clients',
               value: clients.length,
               icon: User,
-              color: 'blue'
+              iconBg: 'bg-blue-500/20',
+              iconText: 'text-blue-400'
             },
             {
               label: 'Total Earned',
               value: formatINR(totalEarned),
               icon: DollarSign,
-              color: 'green'
+              iconBg: 'bg-green-500/20',
+              iconText: 'text-green-400'
             },
             {
               label: 'Total Pending',
               value: formatINR(totalPending),
               icon: FileText,
-              color: 'yellow'
+              iconBg: 'bg-yellow-500/20',
+              iconText: 'text-yellow-400'
             },
           ].map(stat => (
             <div key={stat.label}
@@ -198,10 +201,10 @@ export default function Clients() {
                   {stat.label}
                 </span>
                 <div className={`w-8 h-8 rounded-lg
-                  bg-${stat.color}-500/20 flex items-center
+                  ${stat.iconBg} flex items-center
                   justify-center`}>
                   <stat.icon size={16}
-                    className={`text-${stat.color}-400`}
+                    className={stat.iconText}
                   />
                 </div>
               </div>

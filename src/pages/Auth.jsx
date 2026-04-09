@@ -14,6 +14,9 @@ export default function Auth() {
   const [gLoading, setGLoading] = useState(false)
   const [msg, setMsg] = useState('')
   const [isError, setIsError] = useState(false)
+  const [showForgot, setShowForgot] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotLoading, setForgotLoading] = useState(false)
   const [form, setForm] = useState({
     name: '', email: '', password: ''
   })
@@ -90,7 +93,7 @@ export default function Auth() {
           navigate('/dashboard', { replace: true })
         } else {
           showMsg(
-            'Account created. Check your email to verify, then log in.'
+            'Account created! Check your email to verify, then log in.'
           )
           setIsLogin(true)
           setForm(p => ({
@@ -112,6 +115,7 @@ export default function Auth() {
       setLoading(false)
     }
   }
+
   const handleGoogle = async () => {
     setMsg('')
     setGLoading(true)
@@ -119,7 +123,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/callback`
         }
       })
       if (error) throw error
@@ -129,7 +133,159 @@ export default function Auth() {
       setGLoading(false)
     }
   }
-  
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail.trim()) {
+      showMsg('Please enter your email address', true)
+      return
+    }
+    setForgotLoading(true)
+    setMsg('')
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        forgotEmail.trim(),
+        { redirectTo: `${window.location.origin}/auth` }
+      )
+      if (error) throw error
+      showMsg('Password reset email sent! Check your inbox.')
+      setShowForgot(false)
+      setForgotEmail('')
+    } catch (err) {
+      showMsg(err.message || 'Failed to send reset email', true)
+    } finally {
+      setForgotLoading(false)
+    }
+  }
+
+  // Forgot Password Modal
+  if (showForgot) {
+    return (
+      <div className="min-h-screen bg-slate-900
+        flex items-center justify-center p-4">
+
+        <div className="absolute inset-0
+          overflow-hidden pointer-events-none">
+          <div className="absolute -top-40
+            -right-40 w-96 h-96 bg-blue-600/10
+            rounded-full opacity-60 blur-3xl" />
+          <div className="absolute -bottom-40
+            -left-40 w-96 h-96 bg-slate-700/30
+            rounded-full opacity-60 blur-3xl" />
+        </div>
+
+        <div className="w-full max-w-md relative">
+          <button
+            onClick={() => { setShowForgot(false); setMsg('') }}
+            className="inline-flex items-center
+              gap-2 text-slate-400
+              hover:text-blue-400 text-sm mb-8
+              transition-colors group">
+            <ArrowLeft size={16}
+              className="group-hover:-translate-x-1
+                transition-transform" />
+            Back to login
+          </button>
+
+          <div className="bg-slate-800 rounded-3xl
+            border border-slate-700 p-8">
+
+            <div className="flex items-center
+              justify-center gap-2 mb-8">
+              <div className="w-10 h-10 bg-blue-600
+                rounded-xl flex items-center
+                justify-center shadow-lg
+                shadow-blue-500/25">
+                <Lock size={20}
+                  className="text-white" />
+              </div>
+              <span className="text-2xl font-black
+                text-white">
+                Reset Password
+              </span>
+            </div>
+
+            <div className="mb-6">
+              <h1 className="text-xl font-black
+                text-white">
+                Forgot your password? 🔑
+              </h1>
+              <p className="text-slate-400 text-sm
+                mt-1">
+                Enter your email and we'll send a reset link
+              </p>
+            </div>
+
+            {msg && (
+              <div className={`p-3 rounded-xl
+                text-sm font-medium mb-4
+                ${isError
+                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                }`}>
+                {msg}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm
+                  font-semibold text-slate-300
+                  mb-2 block">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail size={18}
+                    className="absolute left-4
+                      top-1/2 -translate-y-1/2
+                      text-slate-400" />
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={forgotEmail}
+                    onChange={e => setForgotEmail(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleForgotPassword()}
+                    className="w-full pl-11 pr-4 bg-slate-700
+                      py-3 border-2 border-slate-600
+                      rounded-2xl text-sm
+                      text-white
+                      placeholder:text-slate-500
+                      focus:outline-none
+                      focus:border-blue-400
+                      transition-colors"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleForgotPassword}
+                disabled={forgotLoading}
+                className="w-full bg-blue-600
+                  text-white font-bold py-3.5
+                  rounded-2xl text-sm
+                  hover:bg-blue-500 transition-all
+                  shadow-lg shadow-blue-500/25
+                  disabled:opacity-70
+                  disabled:cursor-not-allowed
+                  flex items-center
+                  justify-center gap-2">
+                {forgotLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2
+                      border-white/30 border-t-white
+                      rounded-full animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Send Reset Link'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-slate-900
       flex items-center justify-center p-4">
@@ -166,7 +322,7 @@ export default function Auth() {
             <div className="w-10 h-10 bg-blue-600
               rounded-xl flex items-center
               justify-center shadow-lg
-              shadow-blue-200">
+              shadow-blue-500/25">
               <FileText size={20}
                 className="text-white" />
             </div>
@@ -189,7 +345,7 @@ export default function Auth() {
                   rounded-xl text-sm font-semibold
                   transition-all
                   ${(i === 0) === isLogin
-                    ? 'bg-slate-700 text-white shadow-sm'
+                    ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-white'
                   }`}>
                 {t}
@@ -347,9 +503,14 @@ export default function Auth() {
                 </label>
                 {isLogin && (
                   <button type="button"
+                    onClick={() => {
+                      setShowForgot(true)
+                      setForgotEmail(form.email)
+                      setMsg('')
+                    }}
                     className="text-xs
                       text-blue-400
-                      hover:text-blue-400
+                      hover:text-blue-300
                       font-medium">
                     Forgot password?
                   </button>
@@ -389,7 +550,7 @@ export default function Auth() {
                   className="absolute right-4
                     top-1/2 -translate-y-1/2
                     text-slate-400
-                    hover:text-slate-600">
+                    hover:text-slate-300">
                   {showPass
                     ? <EyeOff size={18} />
                     : <Eye size={18} />}
@@ -438,7 +599,7 @@ export default function Auth() {
               }}
               className="text-blue-400
                 font-semibold
-                hover:text-blue-400">
+                hover:text-blue-300">
               {isLogin ? 'Sign up free' : 'Log in'}
             </button>
           </p>

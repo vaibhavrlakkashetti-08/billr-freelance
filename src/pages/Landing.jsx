@@ -242,8 +242,8 @@ export default function Landing() {
           </div>
 
           <div style={{ display: 'flex', gap: 36 }}>
-            {['Features', 'Pricing', 'Testimonials', 'About'].map(item => (
-              <a key={item} href={`#${item.toLowerCase()}`} style={{ color: '#a1a1a6', fontSize: 14, fontWeight: 400, textDecoration: 'none', transition: 'color 0.2s' }}
+            {[['Features','#features'], ['Pricing','#pricing'], ['Testimonials','#testimonials'], ['About','#about']].map(([item, href]) => (
+              <a key={item} href={href} style={{ color: '#a1a1a6', fontSize: 14, fontWeight: 400, textDecoration: 'none', transition: 'color 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#f5f5f7'}
                 onMouseLeave={e => e.currentTarget.style.color = '#a1a1a6'}>{item}
               </a>
@@ -276,9 +276,9 @@ export default function Landing() {
 
         <div style={{ maxWidth: 820, textAlign: 'center', position: 'relative' }}>
           <Reveal delay={0}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 980, padding: '7px 18px', marginBottom: 40, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)' }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#30d158', animation: 'pulse 2s ease-in-out infinite' }} />
-              <span style={{ color: '#a1a1a6', fontSize: 13, fontWeight: 500, letterSpacing: '0.01em' }}>Built for Indian Freelancers · 🇮🇳</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: 980, padding: '7px 18px', marginBottom: 40, background: 'rgba(37, 99, 235, 0.08)', backdropFilter: 'blur(12px)' }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2563eb', animation: 'pulse 2s ease-in-out infinite' }} />
+              <span style={{ color: '#60a5fa', fontSize: 13, fontWeight: 500, letterSpacing: '0.01em' }}>Built for Indian Freelancers <span style={{ fontSize: 10, verticalAlign: 'middle', marginLeft: 2, background: 'rgba(96, 165, 250, 0.2)', padding: '1px 4px', borderRadius: 4 }}>IN</span></span>
             </div>
           </Reveal>
 
@@ -286,7 +286,7 @@ export default function Landing() {
             <h1 style={{ fontFamily: SERIF, fontSize: 'clamp(54px, 8.5vw, 92px)', fontWeight: 400, lineHeight: 1.03, letterSpacing: '-0.03em', marginBottom: 30, color: '#f5f5f7' }}>
               Invoices &amp; Portfolio
               <br />
-              <span style={{ background: 'linear-gradient(90deg, #f5f5f7 0%, #6e6e73 50%, #f5f5f7 100%)', backgroundSize: '200% auto', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', animation: 'shimmer 4s linear infinite', fontStyle: 'italic' }}>
+              <span style={{ color: '#3b82f6', fontStyle: 'italic', textShadow: '0 0 40px rgba(59, 130, 246, 0.3)' }}>
                 That Win Clients
               </span>
             </h1>
@@ -294,15 +294,15 @@ export default function Landing() {
 
           <Reveal delay={240}>
             <p style={{ color: '#6e6e73', fontSize: 19, lineHeight: 1.7, maxWidth: 520, margin: '0 auto 48px', fontWeight: 300 }}>
-              Create GST-ready invoices, build a stunning portfolio, and get paid faster — everything a freelancer needs, elegantly unified.
+              Create GST-ready invoices, build a stunning portfolio, and get paid faster. Everything a freelancer needs in one place.
             </p>
           </Reveal>
 
           <Reveal delay={360}>
             <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button onClick={() => navigate('/auth')} style={{ background: '#f5f5f7', color: '#000', border: 'none', borderRadius: 980, padding: '16px 36px', fontSize: 16, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.3s cubic-bezier(.16,1,.3,1)', letterSpacing: '-0.01em' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.transform = 'scale(1.04) translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(255,255,255,0.12)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#f5f5f7'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}>
+              <button onClick={() => navigate('/auth')} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 980, padding: '16px 36px', fontSize: 16, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.3s cubic-bezier(.16,1,.3,1)', letterSpacing: '-0.01em', boxShadow: '0 8px 24px rgba(37, 99, 235, 0.25)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#3b82f6'; e.currentTarget.style.transform = 'scale(1.04) translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(37, 99, 235, 0.4)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#2563eb'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.25)' }}>
                 Create Free Invoice <ArrowRight size={18} strokeWidth={2.5} />
               </button>
               <button style={{ background: 'transparent', color: '#f5f5f7', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 980, padding: '16px 36px', fontSize: 16, fontWeight: 400, cursor: 'pointer', transition: 'all 0.3s ease', backdropFilter: 'blur(12px)', letterSpacing: '-0.01em' }}
@@ -319,18 +319,20 @@ export default function Landing() {
         </div>
 
         {/* Stats */}
-        <div style={{ maxWidth: 680, width: '100%', margin: '80px auto 0', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, transform: `translateY(${scrollY * 0.06}px)`, transition: 'transform 0.08s linear', position: 'relative' }}>
+        <div style={{ maxWidth: 880, width: '100%', margin: '80px auto 0', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, transform: `translateY(${scrollY * 0.06}px)`, transition: 'transform 0.08s linear', position: 'relative' }}>
           {[
-            { end: 50000, prefix: '', suffix: '+', label: 'Freelancers' },
+            { end: 15000000, prefix: '', suffix: 'M+', label: 'Indian Freelancers' },
             { end: 0,     prefix: '₹', suffix: '',  label: 'To Get Started' },
-            { end: 2,     prefix: '', suffix: ' min', label: 'First Invoice' },
+            { end: 2,     prefix: '', suffix: ' min', label: 'To Create Invoice' },
           ].map((stat, i) => (
             <Reveal key={i} delay={i * 100 + 500}>
-              <div style={{ textAlign: 'center', padding: '28px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, backdropFilter: 'blur(12px)' }}>
-                <div style={{ fontFamily: SERIF, fontSize: 36, color: '#f5f5f7', marginBottom: 6, letterSpacing: '-0.02em' }}>
-                  <Counter end={stat.end} prefix={stat.prefix} suffix={stat.suffix} />
+              <div style={{ textAlign: 'center', padding: '36px 16px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 28, backdropFilter: 'blur(12px)' }}>
+                <div style={{ fontFamily: SERIF, fontSize: 44, color: '#f5f5f7', marginBottom: 8, letterSpacing: '-0.02em' }}>
+                  {stat.end === 15000000 ? (stat.prefix + "15" + stat.suffix) : (
+                    <Counter end={stat.end} prefix={stat.prefix} suffix={stat.suffix} />
+                  )}
                 </div>
-                <div style={{ color: '#6e6e73', fontSize: 13 }}>{stat.label}</div>
+                <div style={{ color: '#6e6e73', fontSize: 13, fontWeight: 500, letterSpacing: '0.02em' }}>{stat.label}</div>
               </div>
             </Reveal>
           ))}
@@ -471,7 +473,7 @@ export default function Landing() {
       </section>
 
       {/* ── CTA ── */}
-      <section style={{ padding: '120px 28px', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section id="about" style={{ padding: '120px 28px', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,255,255,0.025) 0%, transparent 100%)', pointerEvents: 'none' }} />
         <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center', position: 'relative' }}>
           <Reveal>
