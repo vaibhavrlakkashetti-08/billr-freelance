@@ -46,12 +46,12 @@ const handleUserLogin = (user) => {
 handleUserLogin({
   id: 12345,
   email: 'johndoe@example.com',
-  password: 'supersecretpassword123',
-  apiKey: 'ak_live_123456789'
+  password: process.env.TEST_PASSWORD || 'redacted',
+  apiKey: process.env.TEST_API_KEY || 'redacted'
 });
 
 // 2. Will throw an error and log the error data to error.log
 handleUserLogin({
   email: 'invalid.user@test.io',
-  password: 'badpassword'
+  password: process.env.TEST_PASSWORD || 'redacted'
 });
