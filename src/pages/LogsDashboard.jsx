@@ -18,42 +18,40 @@ export default function LogsDashboard() {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      // Get the current user session to pass to the backend
       const { data: { session } } = await supabase.auth.getSession();
-      
       if (!session) {
         console.error("No active session found, cannot fetch logs");
         setLoading(false);
         return;
       }
 
-      const queryParams = new URLSearchParams({
-        level,
-        search,
-        page,
-        limit
-      });
+      // Query Supabase directly
+      let query = supabase.from('logs').select('*', { count: 'exact' });
 
-      // In production (Netlify), VITE_API_BASE_URL points to the Render backend.
-      // In development, Vite proxies /api to localhost:3000.
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-      const response = await fetch(`${baseUrl}/api/logs?${queryParams}`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch logs');
+      // Apply Filters
+      if (level && level !== 'all') {
+        query = query.eq('level', level);
+      }
+      if (search) {
+        query = query.or(`message.ilike.%${search}%,url.ilike.%${search}%`);
       }
 
-      const data = await response.json();
-      setLogs(data.logs || []);
-      setTotalPages(data.totalPages || 1);
-      
-      // Calculate basic stats for the current page payload (in a real app you'd get this from the backend)
-      setErrorCount(data.logs?.filter(l => l.level === 'error').length || 0);
-      setWarnCount(data.logs?.filter(l => l.level === 'warn').length || 0);
+      // Apply Pagination
+      const offset = (page - 1) * limit;
+      query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+
+      const { data, count, error } = await query;
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      setLogs(data || []);
+      setTotalPages(Math.ceil((count || 0) / limit) || 1);
+
+      // Simple stats for current page
+      setErrorCount(data?.filter(l => l.level === 'error').length || 0);
+      setWarnCount(data?.filter(l => l.level === 'warn').length || 0);
 
     } catch (err) {
       console.error("Error loading dashboard:", err);
