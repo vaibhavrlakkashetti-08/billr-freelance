@@ -5,18 +5,34 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# ── Required environment variables (set in Netlify dashboard) ──────────────────
+# Site Settings → Environment Variables → Add a variable
+#
+#   VITE_SUPABASE_URL        → your Supabase project URL
+#   VITE_SUPABASE_ANON_KEY   → your Supabase anon key
+#   VITE_API_BASE_URL        → your Render backend URL (e.g. https://billr-backend.onrender.com)
+#   VITE_ADMIN_EMAILS        → comma-separated admin emails
+# ──────────────────────────────────────────────────────────────────────────────
+
+# SPA routing — all paths fall back to index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
+# Security headers for all responses
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options            = "DENY"
+    X-Content-Type-Options     = "nosniff"
+    Referrer-Policy            = "strict-origin-when-cross-origin"
+    Permissions-Policy         = "camera=(), microphone=(), geolocation=()"
+    X-XSS-Protection           = "1; mode=block"
+    Strict-Transport-Security  = "max-age=63072000; includeSubDomains; preload"
+    Content-Security-Policy    = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.onrender.com;"
 
+# Aggressive caching for hashed assets
 [[headers]]
   for = "/assets/*"
   [headers.values]

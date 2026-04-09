@@ -34,6 +34,8 @@ export default function LogsDashboard() {
         limit
       });
 
+      // In production (Netlify), VITE_API_BASE_URL points to the Render backend.
+      // In development, Vite proxies /api to localhost:3000.
       const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
       const response = await fetch(`${baseUrl}/api/logs?${queryParams}`, {
         headers: {
