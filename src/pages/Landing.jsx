@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 import { FileText, Users, BarChart3, Globe, Shield, Zap, ArrowRight, Check, Star, ChevronLeft, ChevronRight } from 'lucide-react'
 
 /* ─── SCROLL Y ───────────────────────────────────────── */
@@ -196,6 +197,22 @@ export default function Landing() {
   const navigate = useNavigate()
   const [annual, setAnnual] = useState(false)
   const scrollY = useScrollY()
+
+  // Supabase Google OAuth might redirect to the root explicitly
+  // rather than /callback, if the site root is the only whitelisted URL.
+  // This smoothly catches implicit grant tokens in the URL hash, parses them,
+  // builds the session, and seamlessly routes the user to the dashboard.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) navigate('/dashboard', { replace: true })
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (session) navigate('/dashboard', { replace: true })
+    })
+
+    return () => subscription.unsubscribe()
+  }, [navigate])
 
   const features = [
     { icon: FileText,   title: 'GST Invoices',         desc: 'Fully compliant invoices with automatic CGST & SGST split. Generate, preview, and share PDF in seconds.' },
