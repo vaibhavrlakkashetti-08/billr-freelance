@@ -107,7 +107,9 @@ export default function Portfolio() {
     setLoading(false)
   }, [isPublicView, routeUsername])
 
-  useEffect(() => { fetchPortfolio() }, [fetchPortfolio])
+  useEffect(() => {
+    fetchPortfolio()
+  }, [fetchPortfolio])
 
   /* ── SAVE / CREATE portfolio ───────────────────────────── */
   const savePortfolio = async () => {
