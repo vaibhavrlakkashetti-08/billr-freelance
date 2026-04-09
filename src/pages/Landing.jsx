@@ -305,7 +305,7 @@ export default function Landing() {
                 onMouseLeave={e => { e.currentTarget.style.background = '#2563eb'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.25)' }}>
                 Create Free Invoice <ArrowRight size={18} strokeWidth={2.5} />
               </button>
-              <button style={{ background: 'transparent', color: '#f5f5f7', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 980, padding: '16px 36px', fontSize: 16, fontWeight: 400, cursor: 'pointer', transition: 'all 0.3s ease', backdropFilter: 'blur(12px)', letterSpacing: '-0.01em' }}
+              <button onClick={() => navigate('/portfolio')} style={{ background: 'transparent', color: '#f5f5f7', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 980, padding: '16px 36px', fontSize: 16, fontWeight: 400, cursor: 'pointer', transition: 'all 0.3s ease', backdropFilter: 'blur(12px)', letterSpacing: '-0.01em' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'translateY(0)' }}>
                 View Demo Portfolio
